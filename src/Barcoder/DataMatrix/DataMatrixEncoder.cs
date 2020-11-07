@@ -25,6 +25,19 @@ namespace Barcoder.DataMatrix
             return code;
         }
 
+        public static IBarcode Encode(byte[] data, int? fixedNumberOfRows = null)
+        {
+            CodeSize size = fixedNumberOfRows.HasValue
+                ? GetFixedCodeSizeForData(fixedNumberOfRows.Value, data.Length)
+                : GetSmallestCodeSizeForData(data.Length);
+
+            data = AddPadding(data, size.DataCodewords);
+            data = ErrorCorrection.CalculateEcc(data, size);
+            var code = Render(data, size)
+                ?? throw new InvalidOperationException("Unable to render barcode");
+            return code;
+        }
+
         private static CodeSize GetFixedCodeSizeForData(int fixedNumberOfRows, int dataLength)
         {
             CodeSize codeSize = CodeSizes.All.FirstOrDefault(x => x.Rows == fixedNumberOfRows)

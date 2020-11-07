@@ -17,7 +17,14 @@ namespace Barcoder.Aztec
 
         public static IBarcode Encode(string content, int minimumEccPercentage = 23, int userSpecifiedLayers = 0)
         {
-            BitList bits = HighLevelEncoding.Encode(content.Select(x => (byte)x).ToArray());
+            var code = Encode(content.Select(x => (byte)x).ToArray(), minimumEccPercentage, userSpecifiedLayers);
+            code.Content = content;
+            return code;
+        }
+
+        public static AztecCode Encode(byte[] data, int minimumEccPercentage = 23, int userSpecifiedLayers = 0)
+        {
+            BitList bits = HighLevelEncoding.Encode(data);
             int eccBits = ((bits.Length * minimumEccPercentage) / 100) + 11;
 
             int totalSizeBits = bits.Length + eccBits;
@@ -112,7 +119,6 @@ namespace Barcoder.Aztec
                 }
 	        }
             var code = new AztecCode(matrixSize);
-            code.Content = content;
 
 	        // draw data bits
 	        for (int i = 0, rowOffset = 0; i < layers; i++)
